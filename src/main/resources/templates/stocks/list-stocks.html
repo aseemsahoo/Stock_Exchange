@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <!-- Required meta tags -->
+<!--    <meta http-equiv="refresh"-->
+<!--          content="0; URL='list'">-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+          crossorigin="anonymous">
+    <title>Stocks Directory</title>
+</head>
+
+<body>
+<div class="container">
+
+    <table>
+        <tbody>
+        <tr>
+            <td Search />
+            <td My Profile />
+            <td Search />
+        </tr>
+        </tbody>
+    </table>
+    <div class = "container">
+        <div>
+            <nav class = "navbar navbar-expand-sm bg-dark navbar-dark">
+                <ul class = "navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link fas fa-home fa-2x icon-silver" th:href="@{/dashboard/}"> HOME </a>
+                    </li>
+                </ul>
+                <ul class = "navbar-nav">
+                    <form class="nav-item" th:action ="@{/dashboard/list}">
+                        <input type="text" placeholder="Search" name="keyword" th:value="${keyword}"/>
+                        <input type="submit" class="btn btn-primary btn-sm mb-3" value="Search"/>
+                    </form>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <h1>Stock Directory</h1>
+    <hr>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Symbol</th>
+            <th>Action(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="stock : ${stocks}">
+            <td th:text="${stock.id}" />
+            <td th:text="${stock.name}" />
+            <td th:text="${stock.symbol}" />
+            <td>
+                <a> Charts </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
+
+
