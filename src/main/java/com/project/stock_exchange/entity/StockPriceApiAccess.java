@@ -2,23 +2,20 @@ package com.project.stock_exchange.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDateTime;
-
-public class StockIntradayObj
+public class StockPriceApiAccess
 {
     private String date;
 
-    @JsonProperty("open")
-    private Double myopen;
+    private Double open;
     private Double low;
     private Double high;
     private Double close;
     private int volume;
-    public StockIntradayObj () {};
+    public StockPriceApiAccess() {};
 
-    public StockIntradayObj(String date, Double open, Double low, Double high, Double close, int volume) {
+    public StockPriceApiAccess(String date, Double open, Double low, Double high, Double close, int volume) {
         this.date = date;
-        this.myopen = open;
+        this.open = open;
         this.low = low;
         this.high = high;
         this.close = close;
@@ -34,11 +31,11 @@ public class StockIntradayObj
     }
 
     public Double getOpen() {
-        return myopen;
+        return open;
     }
 
     public void setOpen(Double open) {
-        this.myopen = open;
+        this.open = open;
     }
 
     public Double getLow() {

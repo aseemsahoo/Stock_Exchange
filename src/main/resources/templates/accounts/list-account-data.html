@@ -1,10 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <!-- Required meta tags -->
+  <!--    <meta http-equiv="refresh"-->
+  <!--          content="0; URL='list'">-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+        crossorigin="anonymous">
+  <title>Stocks Directory</title>
 </head>
+
 <body>
-$END$
+<div class="container">
+  <div class = "navbar navbar-expand-lg navbar-dark bg-dark static-tops">
+    <div>
+      <nav class = "navbar navbar-expand-sm bg-dark navbar-dark">
+        <ul class = "navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link fas fa-home fa-2x icon-silver" th:href="@{/dashboard/list}"> Home </a>
+          </li>
+        </ul>
+        <ul class = "navbar-nav">
+          <form class="nav-item" th:action ="@{/dashboard/list}">
+            <input type="text" placeholder="Search" name="keyword" th:value="${keyword}"/>
+            <input type="submit" class="btn btn-primary btn-sm mb-1" value="Search"/>
+          </form>
+        </ul>
+        <ul class = "navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link fas fa-home float-right"
+               th:href="@{/accounts/list}"> Accounts </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <h1>My Profile</h1>
+  <hr>
+
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+    <tbody>
+    <tr>
+      <td th:text="${user.id}" />
+      <td th:text="${user.firstName}" />
+      <td th:text="${user.lastName}" />
+      <td th:text="${user.username}" />
+      <td th:text="${user.balance}" />
+      <td th:text="${user.invested}" />
+    </tr>
+    </tbody>
+  </table>
+</div>
+
 </body>
 </html>
+
+

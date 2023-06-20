@@ -1,2 +1,23 @@
-package com.project.stock_exchange.entity;public class SessionID {
+package com.project.stock_exchange.entity;
+
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
+
+@NoArgsConstructor
+@Component
+@SessionScope
+public class SessionID
+{
+    private User user;
+
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
+

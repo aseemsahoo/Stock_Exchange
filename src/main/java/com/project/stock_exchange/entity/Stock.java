@@ -1,31 +1,64 @@
 package com.project.stock_exchange.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name="stocks")
-public class Stock 
+public class Stock
 {
-    
-}
-
-@Entity
-// mapping to table in database
-@Table(name="sampletable")
-public class Users
-{
-    // define fields
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private int id;
 
-    @Column(name="phone_number")
-    private String phonenumber;
+    @Column(name="name")
+    private String name;
 
-    @Column(name="username")
-    private String username;
+    @Column(name="symbol")
+    private String symbol;
 
-    @Column(name="password")
-    private String password;
+    @Column(name="sector")
+    private String sector;
+
+    public Stock() {}
+    public Stock(int id, String name, String symbol, String sector) {
+        this.id = id;
+        this.name = name;
+        this.symbol = symbol;
+        this.sector = sector;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public String getSector() {
+        return sector;
+    }
+
+    public void setSector(String sector) {
+        this.sector = sector;
+    }
+};
