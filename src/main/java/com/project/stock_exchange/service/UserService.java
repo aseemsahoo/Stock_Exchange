@@ -7,12 +7,10 @@ import java.util.List;
 
 public interface UserService
 {
-    int getUserID(String username);
-
-    User getAccountDetails(int userId);
-    UserInvestedStocks getUserInvestedStocks(int userId, int stockId);
-
+    User getAccountDetails(String username);
+    UserInvestedStocks getUserInvestedStock(int userId, int stockId);
+    List<UserInvestedStocks> getAlluserInvestedStocks(int userId);
     void updateUserBalance(User user);
-
     void updateUserStockData(UserInvestedStocks currStockData);
+    void deleteUserStockData(UserInvestedStocks currStockData);
 }

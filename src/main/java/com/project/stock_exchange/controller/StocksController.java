@@ -1,5 +1,6 @@
 package com.project.stock_exchange.controller;
 
+import com.fasterxml.jackson.databind.node.BigIntegerNode;
 import com.project.stock_exchange.entity.*;
 import com.project.stock_exchange.service.StockService;
 import com.project.stock_exchange.service.UserService;
@@ -10,6 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Controller
@@ -21,10 +25,10 @@ public class StocksController
     private final StockService stockService;
     private final UserService userService;
     private SessionID sessionID;
-    private List<StockPriceApiAccess> chartArray;
+    private List<StockIntradayPriceApiAccess> chartArray;
 
     @Autowired
-    public StocksController(StockService stockService, UserService userService, SessionID sessionID, List<StockPriceApiAccess> chartArray) {
+    public StocksController(StockService stockService, UserService userService, SessionID sessionID, List<StockIntradayPriceApiAccess> chartArray) {
         this.stockService = stockService;
         this.userService = userService;
         this.sessionID = sessionID;
@@ -47,18 +51,23 @@ public class StocksController
         try
         {
             RestTemplate restTemplate = new RestTemplate();
-            StockPriceApiAccess[] chartData = restTemplate.getForObject(url, StockPriceApiAccess[].class, uriVariables);
+            StockIntradayPriceApiAccess[] chartData = restTemplate.getForObject(url, StockIntradayPriceApiAccess[].class, uriVariables);
             chartArray = Arrays.asList(chartData);
         }
         catch(Exception ex)
         {
             throw ex;
         }
-        Map<String, Double> surveyMap = new LinkedHashMap<>();
-        for(StockPriceApiAccess item : chartArray)
+        Map<String, BigDecimal> surveyMap = new LinkedHashMap<>();
+        for(int i=chartArray.size()-1; i>=0; i--)
         {
+            StockIntradayPriceApiAccess item = chartArray.get(i);
             surveyMap.put(item.getDate(), item.getClose());
         }
+//        for(StockIntradayPriceApiAccess item : chartArray)
+//        {
+//            surveyMap.put(item.getDate(), item.getClose());
+//        }
         theModel.addAttribute("surveyMap", surveyMap);
         return "stocks/list-stock-chart";
     }
@@ -69,33 +78,36 @@ public class StocksController
     {
         User user = sessionID.getUser();
 
-        double balance = user.getBalance();
-        double stockPrice = chartArray.get(0).getClose();
-        double buyPrice = buy_quantity * stockPrice;
+        BigDecimal balance = user.getBalance();
 
-        if(buyPrice > balance)
+        BigDecimal stockPrice = chartArray.get(0).getClose();
+        BigDecimal buyPrice = stockPrice.multiply(BigDecimal.valueOf(buy_quantity));
+
+        if(buyPrice.compareTo(balance) == 1)
         {
             // TEMPORARY
-            buy_quantity = (int)(Math.floor(balance / Math.ceil(stockPrice)));
-            buyPrice = buy_quantity * stockPrice;
+            buy_quantity = balance.divide(stockPrice).intValue() - 1;
+            buyPrice = stockPrice.multiply(BigDecimal.valueOf(buy_quantity));
         }
         if(buy_quantity < 1)
         {
             return "stocks/list-stocks";
         }
-        UserInvestedStocks currStockData = userService.getUserInvestedStocks(user.getId(), stockId);
+        UserInvestedStocks currStockData = userService.getUserInvestedStock(user.getId(), stockId);
         if(currStockData == null)
         {
-            currStockData = new UserInvestedStocks(user.getId(), stockId, 0, 0.00);
+            currStockData = new UserInvestedStocks(user.getId(), stockId, 0, new BigDecimal(String.valueOf(0)));
         }
-        currStockData.setQuantity(buy_quantity + currStockData.getQuantity());
-        currStockData.setTotalPrice(buyPrice + currStockData.getTotalPrice());
+        BigInteger curr_quantity = BigInteger.valueOf(currStockData.getQuantity());
+
+        currStockData.setQuantity(curr_quantity.add(BigInteger.valueOf(buy_quantity)).intValue());
+        currStockData.setTotalPrice(buyPrice.add(currStockData.getTotalPrice()));
         userService.updateUserStockData(currStockData);
 
-        user.setBalance(user.getBalance() - buyPrice);
-        user.setInvested(buyPrice + user.getInvested());
+        user.setBalance(user.getBalance().subtract(buyPrice));
+        user.setInvested(user.getInvested().add(buyPrice));
         userService.updateUserBalance(user);
-        return "stocks/list-stocks";
+        return "accounts/list-account-data";
     }
 
     @PostMapping("/sell")
@@ -104,10 +116,10 @@ public class StocksController
     {
         User user = sessionID.getUser();
 
-        UserInvestedStocks currStockData = userService.getUserInvestedStocks(user.getId(), stockId);
+        UserInvestedStocks currStockData = userService.getUserInvestedStock(user.getId(), stockId);
         if(currStockData == null)
         {
-            currStockData = new UserInvestedStocks(user.getId(), stockId, 0, 0.00);
+            return "accounts/list-account-data";
         }
         int curr_quantity = currStockData.getQuantity();
         if(sell_quantity > curr_quantity)
@@ -115,15 +127,23 @@ public class StocksController
             // TEMPORARY
             sell_quantity = curr_quantity;
         }
-        double stockPrice = chartArray.get(0).getClose();
-        double sellPrice = sell_quantity * stockPrice;
+        BigDecimal stockPrice = chartArray.get(0).getClose();
+        BigDecimal buyPrice = (currStockData.getTotalPrice().multiply(BigDecimal.valueOf(sell_quantity))).divide(BigDecimal.valueOf(curr_quantity));
+        BigDecimal sellPrice = stockPrice.multiply(BigDecimal.valueOf(sell_quantity));
 
         currStockData.setQuantity(currStockData.getQuantity() - sell_quantity);
-        currStockData.setTotalPrice(currStockData.getTotalPrice() - sellPrice);
-        userService.updateUserStockData(currStockData);
+        currStockData.setTotalPrice(currStockData.getTotalPrice().subtract(sellPrice));
+        if(currStockData.getQuantity() == 0)
+        {
+            userService.deleteUserStockData(currStockData);
+        }
+        else
+        {
+            userService.updateUserStockData(currStockData);
+        }
 
-        user.setBalance(user.getBalance() + sellPrice);
-        user.setInvested(user.getInvested() - sellPrice);
+        user.setBalance(user.getBalance().add(sellPrice));
+        user.setInvested(user.getInvested().subtract(buyPrice));
         userService.updateUserBalance(user);
 
         return "stocks/list-stocks";

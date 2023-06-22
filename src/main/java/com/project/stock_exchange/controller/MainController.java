@@ -5,7 +5,6 @@ import com.project.stock_exchange.entity.Stock;
 import com.project.stock_exchange.entity.User;
 import com.project.stock_exchange.service.StockService;
 import com.project.stock_exchange.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.Authentication;
@@ -30,19 +29,20 @@ public class MainController
     private List<Stock> stock_list;
     private final StockService stockService;
     private final UserService userService;
-    @Autowired
     private SessionID sessionID;
 
-    public MainController(StockService stockService, UserService userService) {
+    public MainController(StockService stockService, UserService userService, SessionID sessionID) {
         this.stockService = stockService;
         this.userService = userService;
+        this.sessionID = sessionID;
     }
 
     private void setUser(Authentication auth)
     {
         String username = auth.getName();
-        int userId = userService.getUserID(username);
-        User user = userService.getAccountDetails(userId);
+        User user = userService.getAccountDetails(username);
+//        int userId = userService.getUserID(username);
+//        User user = userService.getAccountDetails(userId);
         sessionID.setUser(user);
     }
     @GetMapping("/list")
@@ -50,7 +50,7 @@ public class MainController
     {
         if(keyword == null)
             keyword = "";
-        stock_list = stockService.findByName(keyword);
+        stock_list = stockService.findContainingName(keyword);
 
         if(sessionID.getUser() == null)
         {

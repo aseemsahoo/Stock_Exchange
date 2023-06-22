@@ -1,72 +1,42 @@
 package com.project.stock_exchange.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public class StockPriceApiAccess
 {
-    private String date;
+    private String symbol;
+    private BigDecimal price;
+    private long volume;
+    public StockPriceApiAccess () {};
 
-    private Double open;
-    private Double low;
-    private Double high;
-    private Double close;
-    private int volume;
-    public StockPriceApiAccess() {};
-
-    public StockPriceApiAccess(String date, Double open, Double low, Double high, Double close, int volume) {
-        this.date = date;
-        this.open = open;
-        this.low = low;
-        this.high = high;
-        this.close = close;
+    public StockPriceApiAccess(String symbol, BigDecimal price, long volume) {
+        this.symbol = symbol;
+        this.price = price;
         this.volume = volume;
     }
 
-    public String getDate() {
-        return String.valueOf(date);
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 
-    public Double getOpen() {
-        return open;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setOpen(Double open) {
-        this.open = open;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
-    public Double getLow() {
-        return low;
-    }
-
-    public void setLow(Double low) {
-        this.low = low;
-    }
-
-    public Double getHigh() {
-        return high;
-    }
-
-    public void setHigh(Double high) {
-        this.high = high;
-    }
-
-    public Double getClose() {
-        return close;
-    }
-
-    public void setClose(Double close) {
-        this.close = close;
-    }
-
-    public int getVolume() {
+    public long getVolume() {
         return volume;
     }
 
-    public void setVolume(int volume) {
+    public void setVolume(long volume) {
         this.volume = volume;
     }
 }

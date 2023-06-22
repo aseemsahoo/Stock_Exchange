@@ -6,6 +6,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 @Entity
 @Table(name="users")
 public class User
@@ -23,16 +26,16 @@ public class User
     @Column(name="username")
     private String username;
 
-    @Column(name="amt_balance")
-    private double balance;
+    @Column(name="amt_balance", columnDefinition = "NUMERIC(10,3)")
+    private BigDecimal balance;
 
-    @Column(name="amt_invested")
-    private double invested;
+    @Column(name="amt_invested", columnDefinition = "NUMERIC(10,3)")
+    private BigDecimal invested;
 
     public User () {};
 
     @Autowired
-    public User(int id, String firstName, String lastName, String username, double balance, double invested) {
+    public User(int id, String firstName, String lastName, String username, BigDecimal balance, BigDecimal invested) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -73,19 +76,19 @@ public class User
         this.username = username;
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 
-    public double getInvested() {
+    public BigDecimal getInvested() {
         return invested;
     }
 
-    public void setInvested(double invested) {
+    public void setInvested(BigDecimal invested) {
         this.invested = invested;
     }
 }

@@ -1,26 +1,28 @@
 package com.project.stock_exchange.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 @Entity
 @Table(name="user_portfolio")
-public class UserInvestedStocks
+@IdClass(UserInvestedStocksID.class)
+public class UserInvestedStocks extends UserInvestedStocksID
 {
     @Id
     @Column(name="user_id")
     private int id;
+    @Id
     @Column(name="stock_id")
     private int stockId;
     @Column(name="quantity")
     private int quantity;
-    @Column(name="total_price")
-    private double totalPrice;
+    @Column(name="total_price", columnDefinition = "NUMERIC(10,3)")
+    private BigDecimal totalPrice;
 
     public UserInvestedStocks() {};
-    public UserInvestedStocks(int id, int stockId, int quantity, double totalPrice) {
+    public UserInvestedStocks(int id, int stockId, int quantity, BigDecimal totalPrice) {
         this.id = id;
         this.stockId = stockId;
         this.quantity = quantity;
@@ -51,11 +53,11 @@ public class UserInvestedStocks
         this.quantity = quantity;
     }
 
-    public double getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
 }

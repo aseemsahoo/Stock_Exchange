@@ -49,6 +49,7 @@
         <tr>
             <th>Id</th>
             <th>Name</th>
+            <th>Sector</th>
             <th>Symbol</th>
             <th>Action(s)</th>
         </tr>
@@ -58,6 +59,7 @@
         <tr th:each="stock : ${stocks}">
             <td th:text="${stock.id}" />
             <td th:text="${stock.name}" />
+            <td th:text="${stock.sector}" />
             <td th:text="${stock.symbol}" />
             <td>
                 <a th:href="@{/stocks/showCharts(stockId=${stock.id})}"

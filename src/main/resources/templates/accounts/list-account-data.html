@@ -51,11 +51,46 @@
       <td th:text="${user.firstName}" />
       <td th:text="${user.lastName}" />
       <td th:text="${user.username}" />
-      <td th:text="${user.balance}" />
-      <td th:text="${user.invested}" />
+      <td th:text="'$ ' + ${user.balance}" />
+      <td th:text="'$ ' + ${user.invested}" />
     </tr>
     </tbody>
   </table>
+</div>
+
+<div class="container">
+
+  <h1>Your Portfolio : </h1>
+  <hr>
+
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+    <tr>
+      <th>Name</th>
+      <th>No. of shares</th>
+      <th>Invested value</th>
+      <th>Current value</th>
+      <th>Net profit/loss</th>
+      <th>Percentage</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="item : ${tuple}">
+      <td th:text="${item.getValue0()}" />
+      <td th:text="${item.getValue1()}" />
+      <td th:text="'$ ' + ${item.getValue2()}" />
+      <td th:text="'$ ' + ${item.getValue3()}" />
+      <td class="plusmin" th:style="${item.getValue4() > 0 ? 'color:green' : 'color:red'}"
+          th:text="'$ ' + ${item.getValue4()}" />
+      <td class="plusmin" th:style="${item.getValue5() > 0 ? 'color:green' : 'color:red'}"
+          th:text="${item.getValue5()} + ' %'" />
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+
 </div>
 
 </body>

@@ -4,9 +4,11 @@ import com.project.stock_exchange.dao.UserDAO;
 import com.project.stock_exchange.dao.UserInvestedStocksDAO;
 import com.project.stock_exchange.entity.User;
 import com.project.stock_exchange.entity.UserInvestedStocks;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -24,11 +26,12 @@ public class UserServiceImpl implements  UserService
     }
 
     @Override
-    public int getUserID(String username)
+    @Transactional
+    public User getAccountDetails(String username)
     {
         try
         {
-            return userDAO.getUserID(username);
+            return userDAO.findByUsername(username);
         }
         catch(Exception ex)
         {
@@ -37,11 +40,12 @@ public class UserServiceImpl implements  UserService
     }
 
     @Override
-    public User getAccountDetails(int userId)
+    @Transactional
+    public UserInvestedStocks getUserInvestedStock(int userId, int stockId)
     {
         try
         {
-            return userDAO.getAccountDetails(userId);
+            return userInvestedStocksDAO.getUserInvestedStock(userId, stockId);
         }
         catch(Exception ex)
         {
@@ -50,11 +54,12 @@ public class UserServiceImpl implements  UserService
     }
 
     @Override
-    public UserInvestedStocks getUserInvestedStocks(int userId, int stockId)
+    @Transactional
+    public List<UserInvestedStocks> getAlluserInvestedStocks(int userId)
     {
         try
         {
-            return userInvestedStocksDAO.getUserInvestedStocks(userId, stockId);
+            return userInvestedStocksDAO.findById(userId);
         }
         catch(Exception ex)
         {
@@ -63,6 +68,7 @@ public class UserServiceImpl implements  UserService
     }
 
     @Override
+    @Transactional
     public void updateUserBalance(User user)
     {
         try
@@ -76,6 +82,7 @@ public class UserServiceImpl implements  UserService
     }
 
     @Override
+    @Transactional
     public void updateUserStockData(UserInvestedStocks currStockData)
     {
         try
@@ -86,6 +93,18 @@ public class UserServiceImpl implements  UserService
         {
             throw ex;
         }
+    }
 
+    @Override
+    public void deleteUserStockData(UserInvestedStocks currStockData)
+    {
+        try
+        {
+            userInvestedStocksDAO.delete(currStockData);
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
     }
 }

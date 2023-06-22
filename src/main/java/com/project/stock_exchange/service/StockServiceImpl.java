@@ -2,6 +2,7 @@ package com.project.stock_exchange.service;
 
 import com.project.stock_exchange.dao.StockDAO;
 import com.project.stock_exchange.entity.Stock;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,24 +22,12 @@ public class StockServiceImpl implements StockService
     }
 
     @Override
-    public List<Stock> find_all_stocks()
+    @Transactional
+    public List<Stock> findContainingName(String keyword)
     {
         try
         {
-            return stockDAO.findAll();
-        }
-        catch(Exception ex)
-        {
-            throw ex;
-        }
-    }
-
-    @Override
-    public List<Stock> findByName(String keyword)
-    {
-        try
-        {
-            return stockDAO.findByName(keyword);
+            return stockDAO.findContainingName(keyword);
         }
         catch(Exception ex)
         {
@@ -51,7 +40,7 @@ public class StockServiceImpl implements StockService
     {
         try
         {
-            return stockDAO.findByStockID(stockId);
+            return stockDAO.findById(stockId).get();
         }
         catch(Exception ex)
         {
