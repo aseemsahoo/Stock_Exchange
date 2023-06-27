@@ -1,4 +1,4 @@
-package com.project.stock_exchange.service;
+package com.project.stock_exchange.service.Interfaces;
 
 import com.project.stock_exchange.entity.DTO.UserSignupDTO;
 

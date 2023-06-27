@@ -70,8 +70,18 @@
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script type="text/javascript" src="https://www.highcharts.com/samples/data/usdeur.js"></script>
+<script type="text/javascript" src="https://www.highcharts.com/samples/data/usdeur.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script type="text/javascript" src="https://www.highcharts.com/samples/data/usdeur.js"></script>
 
 <script th:inline="javascript">
     $(function(){
@@ -88,26 +98,55 @@
         },
         xAxis: {
             categories: [[${surveyMap.keySet()}]],
+            tickAmount: 5,
+            tickInterval: 150,
+            tickWidth: 1,
             crosshair: true,
-            minRange: 5,
-            maxRange: 15,
+            labels: {
+	  	        padding: 5,
+	  	        enabled: true,
+	  	        overflow: false
+			},
             title: {
                 text: 'Time'
             }
         },
         yAxis: {
-            min: 0,
-            max:600,
-            minRange: 5,
-            maxRange: 15,
+<!--            min: 0,-->
+<!--            max:600,-->
+            softMin: 10,
+            softMax: 15,
+            startOnTick: false,
+            endOnTick: true,
             title: {
                 text: 'Stock Price'
             }
         },
+
+
+        scrollbar: {
+            enabled: true
+        },
+
+
+        rangeSelector: {
+            selected: 1
+        },
+        navigator: {
+            enabled: true,
+
+            stickToMax: false,
+            xAxis: {
+                labels:
+                {
+                    enabled: false
+                }
+            }
+        },
         tooltip: {
             headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-            '<td style="padding:0"><b>{point.y:.1f} K</b></td></tr>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">Price: </td>' +
+            '<td style="padding:1"><b> ${point.y:.1f} </b></td></tr>',
             footerFormat: '</table>',
             shared: true,
             useHTML: true
@@ -138,24 +177,24 @@
 
 <table class="table table-hover">
   <tbody>
-    <tr>
-      <td>
-        <form th:action="@{/stocks/buy}" method="post">
-          <input type="hidden" name="id" th:field="${stock.id}" />
-          <input type="number" name="buy_quantity" placeholder="Enter the no. of stocks to buy"
-                 class="form-control mb-4 w-50" required>
-          <button type="submit" class="btn btn-info col-2"> Buy </button>
-        </form>
-      </td>
-      <td>
-        <form th:action="@{/stocks/sell}" method="post">
-          <input type="hidden" name="id" th:field="${stock.id}" />
-          <input type="number" name="sell_quantity" placeholder="Enter the no. of stocks to sell"
-                 class="form-control mb-4 w-50" required>
-          <button type="submit" class="btn btn-info col-2"> Buy </button>
-        </form>
-      </td>
-    </tr>
+  <tr>
+    <td>
+      <form th:action="@{/stocks/buy}" method="post">
+        <input type="hidden" name="id" th:field="${stock.id}" />
+        <input type="number" name="buy_quantity" placeholder="Enter the no. of stocks to buy"
+               class="form-control mb-4 w-50" required>
+        <button type="submit" class="btn btn-info col-2"> Buy </button>
+      </form>
+    </td>
+    <td>
+      <form th:action="@{/stocks/sell}" method="post">
+        <input type="hidden" name="id" th:field="${stock.id}" />
+        <input type="number" name="sell_quantity" placeholder="Enter the no. of stocks to sell"
+               class="form-control mb-4 w-50" required>
+        <button type="submit" class="btn btn-info col-2"> Buy </button>
+      </form>
+    </td>
+  </tr>
 
   </tbody>
 </table>
@@ -164,4 +203,3 @@
 <div id="bottom"></div>
 </body>
 </html>
-

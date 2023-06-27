@@ -3,16 +3,16 @@ package com.project.stock_exchange.service;
 import com.project.stock_exchange.dao.UserDAO;
 import com.project.stock_exchange.dao.UserInvestedStocksDAO;
 import com.project.stock_exchange.entity.User;
-import com.project.stock_exchange.entity.UserInvestedStocks;
+import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
+import com.project.stock_exchange.service.Interfaces.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
-public class UserServiceImpl implements  UserService
+public class UserServiceImpl implements UserService
 {
     private UserDAO userDAO;
     private UserInvestedStocksDAO userInvestedStocksDAO;
@@ -41,7 +41,7 @@ public class UserServiceImpl implements  UserService
 
     @Override
     @Transactional
-    public UserInvestedStocks getUserInvestedStock(int userId, int stockId)
+    public UserInvestedStocksDTO getUserInvestedStock(int userId, int stockId)
     {
         try
         {
@@ -55,7 +55,7 @@ public class UserServiceImpl implements  UserService
 
     @Override
     @Transactional
-    public List<UserInvestedStocks> getAlluserInvestedStocks(int userId)
+    public List<UserInvestedStocksDTO> getAlluserInvestedStocks(int userId)
     {
         try
         {
@@ -83,7 +83,7 @@ public class UserServiceImpl implements  UserService
 
     @Override
     @Transactional
-    public void updateUserStockData(UserInvestedStocks currStockData)
+    public void updateUserStockData(UserInvestedStocksDTO currStockData)
     {
         try
         {
@@ -96,7 +96,7 @@ public class UserServiceImpl implements  UserService
     }
 
     @Override
-    public void deleteUserStockData(UserInvestedStocks currStockData)
+    public void deleteUserStockData(UserInvestedStocksDTO currStockData)
     {
         try
         {

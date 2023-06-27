@@ -1,9 +1,11 @@
 package com.project.stock_exchange.controller;
 
-import com.fasterxml.jackson.databind.node.BigIntegerNode;
 import com.project.stock_exchange.entity.*;
-import com.project.stock_exchange.service.StockService;
-import com.project.stock_exchange.service.UserService;
+import com.project.stock_exchange.entity.ApiAccess.StockIntradayPriceApiAccess;
+import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
+import com.project.stock_exchange.entity.singleton.SessionID;
+import com.project.stock_exchange.service.Interfaces.StockService;
+import com.project.stock_exchange.service.Interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -13,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.*;
 
 @Controller
@@ -38,6 +39,8 @@ public class StocksController
     @GetMapping("/showCharts")
     public String show_charts(@RequestParam("stockId") int stock_id, Model theModel)
     {
+        if(sessionID.getUser() == null)
+            return "redirect:/";
         Stock curr_stock = stockService.findById(stock_id);
         theModel.addAttribute("stock", curr_stock);
 
@@ -64,10 +67,6 @@ public class StocksController
             StockIntradayPriceApiAccess item = chartArray.get(i);
             surveyMap.put(item.getDate(), item.getClose());
         }
-//        for(StockIntradayPriceApiAccess item : chartArray)
-//        {
-//            surveyMap.put(item.getDate(), item.getClose());
-//        }
         theModel.addAttribute("surveyMap", surveyMap);
         return "stocks/list-stock-chart";
     }
@@ -93,10 +92,10 @@ public class StocksController
         {
             return "stocks/list-stocks";
         }
-        UserInvestedStocks currStockData = userService.getUserInvestedStock(user.getId(), stockId);
+        UserInvestedStocksDTO currStockData = userService.getUserInvestedStock(user.getId(), stockId);
         if(currStockData == null)
         {
-            currStockData = new UserInvestedStocks(user.getId(), stockId, 0, new BigDecimal(String.valueOf(0)));
+            currStockData = new UserInvestedStocksDTO(user.getId(), stockId, 0, new BigDecimal(String.valueOf(0)));
         }
         BigInteger curr_quantity = BigInteger.valueOf(currStockData.getQuantity());
 
@@ -107,7 +106,7 @@ public class StocksController
         user.setBalance(user.getBalance().subtract(buyPrice));
         user.setInvested(user.getInvested().add(buyPrice));
         userService.updateUserBalance(user);
-        return "accounts/list-account-data";
+        return "redirect:/dashboard/list";
     }
 
     @PostMapping("/sell")
@@ -116,7 +115,7 @@ public class StocksController
     {
         User user = sessionID.getUser();
 
-        UserInvestedStocks currStockData = userService.getUserInvestedStock(user.getId(), stockId);
+        UserInvestedStocksDTO currStockData = userService.getUserInvestedStock(user.getId(), stockId);
         if(currStockData == null)
         {
             return "accounts/list-account-data";
@@ -146,6 +145,7 @@ public class StocksController
         user.setInvested(user.getInvested().subtract(buyPrice));
         userService.updateUserBalance(user);
 
-        return "stocks/list-stocks";
+        return "redirect:/dashboard/list";
+//        return "stocks/list-stocks";
     }
 }

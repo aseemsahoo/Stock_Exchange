@@ -45,12 +45,17 @@
 
   <table class="table table-bordered table-striped">
     <thead class="table-dark">
+    <tr>
+      <th>Id</th>
+      <th>Name</th>
+      <th>Balance</th>
+      <th>Total Invested</th>
+    </tr>
+    </thead>
     <tbody>
     <tr>
       <td th:text="${user.id}" />
-      <td th:text="${user.firstName}" />
-      <td th:text="${user.lastName}" />
-      <td th:text="${user.username}" />
+      <td th:text="${user.firstName + ' ' + user.lastName}" />
       <td th:text="'$ ' + ${user.balance}" />
       <td th:text="'$ ' + ${user.invested}" />
     </tr>

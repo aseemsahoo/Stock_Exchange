@@ -1,13 +1,12 @@
 package com.project.stock_exchange.entity.DTO;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
-public class UserSignInDTO
+@Entity
+@Table(name="users")
+public class UserSignupDTO
 {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -29,21 +28,24 @@ public class UserSignInDTO
     @Column(name="password")
     private String password;
 
+    @Column(name="enabled")
+    private Boolean enabled;
     @Column(name="amt_balance", columnDefinition = "NUMERIC(10,3)")
     private BigDecimal balance;
 
     @Column(name="amt_invested", columnDefinition = "NUMERIC(10,3)")
     private BigDecimal invested;
 
-    public UserSignInDTO () {};
+    public UserSignupDTO() {};
 
-    public UserSignInDTO(int id, String firstName, String lastName, String email, String username, String password, BigDecimal balance, BigDecimal invested) {
+    public UserSignupDTO(int id, String firstName, String lastName, String email, String username, String password, Boolean enabled, BigDecimal balance, BigDecimal invested) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.username = username;
         this.password = password;
+        this.enabled = enabled;
         this.balance = balance;
         this.invested = invested;
     }
@@ -95,6 +97,14 @@ public class UserSignInDTO
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public BigDecimal getBalance() {

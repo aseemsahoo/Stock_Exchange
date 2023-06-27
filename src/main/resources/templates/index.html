@@ -1,10 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <!-- Required meta tags -->
+  <!--    <meta http-equiv="refresh"-->
+  <!--          content="0; URL='list'">-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+        crossorigin="anonymous">
+  <title>Welcome</title>
 </head>
+
 <body>
-$END$
+
+<div class="d-flex align-items-center justify-content-center" style="height: 500px;">
+  <div class="row mb-4">
+    <div class="text-center pt-1 pb-1">
+
+      <h1> Stock Exchange Simulator</h1>
+    </div>
+    <div class="d-flex align-items-center justify-content-center">
+      <a th:href="@{/login_page}">
+        <button type="button" class="btn btn-info btn-lg m-5">Login</button>
+      </a>
+      <a th:href="@{/signup_page}">
+        <button type="button" class="btn btn-info btn-lg m-5">Sign Up</button>
+      </a>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
+

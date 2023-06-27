@@ -1,4 +1,4 @@
-package com.project.stock_exchange.entity;
+package com.project.stock_exchange.entity.ApiAccess;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

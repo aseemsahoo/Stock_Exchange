@@ -1,14 +1,13 @@
-package com.project.stock_exchange.entity;
+package com.project.stock_exchange.entity.DTO;
 
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @Entity
 @Table(name="user_portfolio")
 @IdClass(UserInvestedStocksID.class)
-public class UserInvestedStocks extends UserInvestedStocksID
+public class UserInvestedStocksDTO extends UserInvestedStocksID
 {
     @Id
     @Column(name="user_id")
@@ -21,8 +20,8 @@ public class UserInvestedStocks extends UserInvestedStocksID
     @Column(name="total_price", columnDefinition = "NUMERIC(10,3)")
     private BigDecimal totalPrice;
 
-    public UserInvestedStocks() {};
-    public UserInvestedStocks(int id, int stockId, int quantity, BigDecimal totalPrice) {
+    public UserInvestedStocksDTO() {};
+    public UserInvestedStocksDTO(int id, int stockId, int quantity, BigDecimal totalPrice) {
         this.id = id;
         this.stockId = stockId;
         this.quantity = quantity;

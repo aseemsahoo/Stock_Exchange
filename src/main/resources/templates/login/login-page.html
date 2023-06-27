@@ -1,10 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <!-- Required meta tags -->
+  <!--    <meta http-equiv="refresh"-->
+  <!--          content="0; URL='list'">-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+        crossorigin="anonymous">
+  <title>Login</title>
 </head>
+
 <body>
-$END$
+
+<form th:action="@{/loginSubmit}" method="post">
+  <div class="d-flex align-items-center justify-content-center" style="height: 500px;">
+    <div class="row mb-2 col-3">
+      <div class="text-center pt-1 pb-1 mb-2">
+
+        <div class="mb-4">
+          <h2> Login</h2>
+        </div>
+
+        <div class="form-outline mb-4 me-2 m-1">
+          <input type="text" name="username" class="form-control" placeholder="Username" required/>
+        </div>
+
+        <div class="form-outline mb-4 me-2 m-1">
+          <input type="password" name="password" class="form-control" placeholder="Password" required/>
+        </div>
+
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-primary btn-mid mb-3">Login</button>
+
+        <!-- Register button -->
+        <div class="text-center">
+          <p>Not a member? <a th:href="@{/signup_page}">Register</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 </body>
 </html>
+
+

@@ -1,4 +1,4 @@
-package com.project.stock_exchange.entity;
+package com.project.stock_exchange.entity.DTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;

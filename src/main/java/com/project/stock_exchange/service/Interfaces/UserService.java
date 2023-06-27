@@ -1,16 +1,16 @@
-package com.project.stock_exchange.service;
+package com.project.stock_exchange.service.Interfaces;
 
 import com.project.stock_exchange.entity.User;
-import com.project.stock_exchange.entity.UserInvestedStocks;
+import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
 
 import java.util.List;
 
 public interface UserService
 {
     User getAccountDetails(String username);
-    UserInvestedStocks getUserInvestedStock(int userId, int stockId);
-    List<UserInvestedStocks> getAlluserInvestedStocks(int userId);
+    UserInvestedStocksDTO getUserInvestedStock(int userId, int stockId);
+    List<UserInvestedStocksDTO> getAlluserInvestedStocks(int userId);
     void updateUserBalance(User user);
-    void updateUserStockData(UserInvestedStocks currStockData);
-    void deleteUserStockData(UserInvestedStocks currStockData);
+    void updateUserStockData(UserInvestedStocksDTO currStockData);
+    void deleteUserStockData(UserInvestedStocksDTO currStockData);
 }

@@ -2,12 +2,12 @@ package com.project.stock_exchange.service;
 
 import com.project.stock_exchange.dao.StockDAO;
 import com.project.stock_exchange.entity.Stock;
+import com.project.stock_exchange.service.Interfaces.StockService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 // we use this service class as a delegate for DAO class (remember)
 @Service

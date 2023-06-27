@@ -1,12 +1,12 @@
 package com.project.stock_exchange.controller;
 
 import com.project.stock_exchange.entity.*;
-import com.project.stock_exchange.service.StockService;
-import com.project.stock_exchange.service.UserService;
-import jakarta.persistence.Tuple;
-import org.antlr.v4.runtime.misc.Triple;
+import com.project.stock_exchange.entity.ApiAccess.StockPriceApiAccess;
+import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
+import com.project.stock_exchange.entity.singleton.SessionID;
+import com.project.stock_exchange.service.Interfaces.StockService;
+import com.project.stock_exchange.service.Interfaces.UserService;
 import org.javatuples.Sextet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -38,13 +37,15 @@ public class AccountsController
     @GetMapping("/list")
     public String listAccountData(Model theModel)
     {
+        if(sessionID.getUser() == null)
+            return "redirect:/";
         User curr_user = sessionID.getUser();
         theModel.addAttribute("user", curr_user);
 
-        List<UserInvestedStocks> stocksList = userService.getAlluserInvestedStocks(curr_user.getId());
+        List<UserInvestedStocksDTO> stocksList = userService.getAlluserInvestedStocks(curr_user.getId());
         List<Sextet> tuple = new ArrayList<>();
 
-        for(UserInvestedStocks user_stock : stocksList)
+        for(UserInvestedStocksDTO user_stock : stocksList)
         {
             Stock stock = stockService.findById(user_stock.getStockId());
             String url = "https://financialmodelingprep.com/api/v3/quote-short/{symbol}?apikey={apiKey}";
@@ -71,7 +72,7 @@ public class AccountsController
             BigDecimal currentValue = currStockPrice.multiply(stockQuantity);
 
             BigDecimal profit = currentValue.subtract(investedValue);
-            BigDecimal profit_cent = (profit.divide(investedValue, 5, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+            BigDecimal profit_cent = (profit.divide(investedValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
 
             Sextet<String, Integer, BigDecimal, BigDecimal, BigDecimal, BigDecimal> sextet = Sextet.with
                     (stock.getName(), user_stock.getQuantity(), investedValue, currentValue, profit, profit_cent);
