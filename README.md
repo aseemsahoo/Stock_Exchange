@@ -70,7 +70,7 @@ The user can view their portfolio where they can assess all their invested share
 
 | Method   | URL                                      | Description                              |
 | -------- | ---------------------------------------- | ---------------------------------------- |
-| `GET`    | `/main/stocks/showCharts?stockId=1`           | Price trend of the selected company        |
+| `GET`    | `/main/stocks/showCharts?stockId={}`           | Price trend of the selected company        |
 | `POST`    | `/main/stocks/buy`                   | Buy some shares of the selected stock                       |
 | `POST`   | `/main/stocks/sell`| Sell some/all shares of the selected stock|
 
@@ -95,8 +95,6 @@ Frameworks used are:
 - MySQL connector
 - Thymeleaf
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ---
 
 # Prerequisites
@@ -106,16 +104,19 @@ You need the following installed on your desktop:
 
 # Installation
 
+Credentials to bypass spring security:
+
 Username: aseem
+
 Password: sahoo
 
 **I am a tester:** 
 - Download the latest build from the [releases](https://github.com/aseemsahoo/Stock_Exchange/releases) section. Run the .jar application.
+- Use the above credentials to login for the application to start.
 
 **I am a developer:** 
 - Clone this repository
 - Open this project in Intellij or Eclipse.
-- Use the endpoints (mentioned above with credentials) for Postman testing
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
