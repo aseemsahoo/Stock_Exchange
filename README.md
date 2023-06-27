@@ -7,44 +7,36 @@ APIs are used to pull real-time data from the server and, if users buy/sell any 
 # Table of contents
 <!--ts-->
    * [Implementaion](#implementaion)
-      * [Login Page](#login-page)
       * [User Dashboard Page](#user-dashboard-page)
       * [Stocks display Page](#stocks-display-page)
       * [Portfolio Page](#portfolio-page)
    * [Application programming interface (API)](#application-programming-interface-api)
-      * [Registration API](#registration-api)
+      * [Login API](#login-api)
       * [User Dashboard API](#user-dashboard-api)
       * [Stocks Display API](#stocks-display-api)
       * [Accounts API](#accounts-api)
    * [Technologies & Frameworks](#technologies--frameworks)
    * [Prerequisites](#prerequisites)
    * [Installation](#installation)
-   * [Acknowledgments](#acknowledgments)
 <!--te-->
 
 ---
 
 # Implementaion
-### Login Page
-
-Currently it does not support 'Reset/Forgot Password'. It will be added soon. 
-
-
-
-
 ### User Dashboard Page
 Upon successful login, the user will be shown the list of all stocks. It also contains a search tab where you can search the stocks by any keyword.
 
-
-
+![](https://imgur.com/sWEJAD3.jpg)
 
 ### Stocks display Page
 If the user wants to view the charts of any stock, then they will be redirected to this page.
 
+![](https://imgur.com/EiU4Zir.jpg)
 
 ### Portfolio Page
 The user can view their portfolio where they can assess all their invested shares.
 
+![](https://imgur.com/KFrGbtF.jpg)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -87,12 +79,15 @@ The user can view their portfolio where they can assess all their invested share
 
 # Technologies & Frameworks
 This project is created with:
-* SpringBoot 3.0+
-* Java JDK 9
-* MySQL
+* Java JDK 11
+* SpringBoot 3.0
+* MySQL DB
 
 Frameworks used are:
 - MySQL connector
+- Thymeleaf
+- Hibernate
+- Spring Data JPA
 - Thymeleaf
 
 ---
