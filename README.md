@@ -106,7 +106,8 @@ Username: aseem
 Password: sahoo
 
 **I am a tester:** 
-- Download the latest build from the [releases](https://github.com/aseemsahoo/Stock_Exchange/releases) section. Run the .jar application.
+- Download the latest build from the [releases](https://github.com/aseemsahoo/Stock_Exchange/releases) section. Run the .jar application under target.zip.
+- Go to `localhost:8080/main/dashboard/list`.
 - Use the above credentials to login for the application to start.
 
 **I am a developer:** 
