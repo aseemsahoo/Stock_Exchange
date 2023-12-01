@@ -5,17 +5,18 @@ import com.project.stock_exchange.entity.singleton.SessionID;
 import com.project.stock_exchange.entity.User;
 import com.project.stock_exchange.service.Interfaces.UserService;
 import com.project.stock_exchange.service.Interfaces.UserSignupService;
+import com.project.stock_exchange.util.ApiException;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
-@Controller
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+@RestController
 public class LoginController
 {
     @Autowired
@@ -28,51 +29,57 @@ public class LoginController
         this.sessionID = sessionID;
     }
 
-    @GetMapping("/")
-    public String welcome(Model theModel)
-    {
-        return "index";
-    }
-    @GetMapping("/login_page")
-    public String showLoginPage(Model theModel)
-    {
-        return "login/login-page";
-    }
-    @GetMapping("/signup_page")
-    public String showSignupPage(Model theModel)
-    {
-        UserSignupDTO userSignupDTO = new UserSignupDTO();
-        theModel.addAttribute("user_signup", userSignupDTO);
-        return "login/signup-page";
-    }
-
     @PostMapping("/signupSubmit")
-    public String signUp(@ModelAttribute("user_signup") UserSignupDTO userSignupDTO,
-                         Model theModel)
-    {
+    public ResponseEntity<?> signUp(@RequestBody Map<String, String> requestBody) throws Exception{
+        String firstName = requestBody.get("firstName");
+        String lastName = requestBody.get("lastName");
+        String username = requestBody.get("username");
+        String password = requestBody.get("password");
+
+        UserSignupDTO userSignupDTO = new UserSignupDTO();
+
+        userSignupDTO.setFirstName(firstName);
+        userSignupDTO.setLastName(lastName);
         userSignupDTO.setEmail("N/A");
+        userSignupDTO.setUsername(username);
         userSignupDTO.setPassword("{noop}" + userSignupDTO.getPassword());
+
         userSignupDTO.setEnabled(true);
         userSignupDTO.setBalance(BigDecimal.valueOf(10000.000));
         userSignupDTO.setInvested(BigDecimal.valueOf(0));
 
-        userSignupService.saveUser(userSignupDTO);
-        return "login/login-page";
+        try{
+            userSignupService.saveUser(userSignupDTO);
+        }
+        catch(Exception ex){
+
+            ApiException errorResponse = new ApiException(HttpStatus.FORBIDDEN, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+        return ResponseEntity.ok("Success!");
     }
+
     @PostMapping("/loginSubmit")
-    public String login(@RequestParam("username") String username,
-                        @RequestParam("password") String password)
-    {
+    // change return type to something solid
+    public ResponseEntity<?> login(@RequestBody Map<String, String> requestBody) throws Exception {
+        String username = requestBody.get("username");
+        String password = requestBody.get("password");
+
         password = "{noop}" + password;
-        UserSignupDTO userSignupDTO = userSignupService.getUser(username, password);
-        if(userSignupDTO == null)
-        {
-            return "login/login-page";
+        try{
+            UserSignupDTO userSignupDTO = userSignupService.getUser(username, password);
+            if(userSignupDTO == null) {
+                throw new Exception("Invalid username or password");
+            }
+        }
+        catch (Exception ex){
+            ApiException errorResponse = new ApiException(HttpStatus.UNAUTHORIZED, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         User user = userService.getAccountDetails(username);
         sessionID.setUser(user);
-        // singleton class set karo and others
-        return "redirect:/dashboard/list";
 
+        // singleton class set karo and others
+        return ResponseEntity.ok(user);
     }
 }

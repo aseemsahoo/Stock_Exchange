@@ -2,23 +2,28 @@ package com.project.stock_exchange.controller;
 
 import com.project.stock_exchange.entity.*;
 import com.project.stock_exchange.entity.ApiAccess.StockPriceApiAccess;
+import com.project.stock_exchange.entity.DTO.UserAccountStocksDTO;
 import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
 import com.project.stock_exchange.entity.singleton.SessionID;
 import com.project.stock_exchange.service.Interfaces.StockService;
 import com.project.stock_exchange.service.Interfaces.UserService;
+import com.project.stock_exchange.util.ApiException;
 import org.javatuples.Sextet;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
-@Controller
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+@RestController
 @RequestMapping("/accounts")
 public class AccountsController
 {
@@ -34,27 +39,49 @@ public class AccountsController
         this.sessionID = sessionID;
     }
 
-    @GetMapping("/list")
-    public String listAccountData(Model theModel)
+    // To be deprecated in FUTURE
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getUserDetails(@PathVariable("username") String username) throws Exception
     {
-        if(sessionID.getUser() == null)
-            return "redirect:/";
-        User curr_user = sessionID.getUser();
-        theModel.addAttribute("user", curr_user);
+        // inject
+        try{
+            User user = sessionID.getUser();
+            User currUser = userService.getAccountDetails(username);
+            return ResponseEntity.ok(currUser);
+        }
+        catch(Exception ex){
+            ApiException errorResponse = new ApiException(HttpStatus.NOT_FOUND, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
 
-        List<UserInvestedStocksDTO> stocksList = userService.getAlluserInvestedStocks(curr_user.getId());
-        List<Sextet> tuple = new ArrayList<>();
+    @GetMapping("/list")
+    // no return of DTO classes. Change it
+    public List<UserAccountStocksDTO> listAccountStocksData()
+    {
+        if(sessionID.getUser() == null) { }
+//            return "redirect:/";
+//        User curr_user = sessionID.getUser();
 
+        User curr_user = userService.getAccountDetails("aseemsahoo");
+
+                    List<UserInvestedStocksDTO> stocksList = userService.getAlluserInvestedStocks(curr_user.getId());
+        List<UserAccountStocksDTO> portfolioList = new ArrayList<>();
+
+        // for every stock invested, calcuate P&L
+        // DO THIS IN THE FRONTEND !!!
         for(UserInvestedStocksDTO user_stock : stocksList)
         {
-            Stock stock = stockService.findById(user_stock.getStockId());
+            Stock currStock = stockService.findById(user_stock.getStockId());
             String url = "https://financialmodelingprep.com/api/v3/quote-short/{symbol}?apikey={apiKey}";
 
             Map<String, String> uriVariables = new HashMap<>();
-            uriVariables.put("symbol", stock.getSymbol());
+            uriVariables.put("symbol", currStock.getSymbol());
             uriVariables.put("apiKey", apiKey);
 
             List<StockPriceApiAccess> stockPriceDetails = new ArrayList<>();
+
+            // get the latest stock price
             try
             {
                 RestTemplate restTemplate = new RestTemplate();
@@ -71,14 +98,16 @@ public class AccountsController
             BigDecimal investedValue = user_stock.getTotalPrice();
             BigDecimal currentValue = currStockPrice.multiply(stockQuantity);
 
-            BigDecimal profit = currentValue.subtract(investedValue);
-            BigDecimal profit_cent = (profit.divide(investedValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+            portfolioList.add(new UserAccountStocksDTO(
+                    curr_user.getId(), currStock.getId(), user_stock.getQuantity(),
+                    investedValue, currStock.getName(), currentValue));
 
-            Sextet<String, Integer, BigDecimal, BigDecimal, BigDecimal, BigDecimal> sextet = Sextet.with
-                    (stock.getName(), user_stock.getQuantity(), investedValue, currentValue, profit, profit_cent);
-            tuple.add(sextet);
+//            BigDecimal profit = currentValue.subtract(investedValue);
+//            BigDecimal profit_cent = (profit.divide(investedValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+
+//            Sextet<String, Integer, BigDecimal, BigDecimal, BigDecimal, BigDecimal> sextet = Sextet.with
+//                    (currStock.getName(), user_stock.getQuantity(), investedValue, currentValue, profit, profit_cent);
         }
-        theModel.addAttribute("tuple", tuple);
-        return "accounts/list-account-data";
+        return portfolioList;
     }
 }

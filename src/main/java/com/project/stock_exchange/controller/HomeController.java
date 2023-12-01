@@ -4,18 +4,21 @@ import com.project.stock_exchange.entity.singleton.SessionID;
 import com.project.stock_exchange.entity.Stock;
 import com.project.stock_exchange.service.Interfaces.StockService;
 import com.project.stock_exchange.service.Interfaces.UserService;
+import com.project.stock_exchange.util.ApiException;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.Authentication;
+//import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 
 import org.springframework.stereotype.Controller;
 
 import java.util.*;
 
-@Controller
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+@RestController
 @RequestMapping("/dashboard")
 public class HomeController
 {
@@ -38,23 +41,39 @@ public class HomeController
 ////        User user = userService.getAccountDetails(userId);
 //        sessionID.setUser(user);
 //    }
+
     @GetMapping("/list")
-    public String list_users(Model theModel, @Param("keyword")String keyword, Authentication auth)
+    public List<Stock> getStocksList(@RequestParam("keyword") Optional<String> keyword) //, Authentication auth)
     {
-        if(sessionID.getUser() == null)
-            return "redirect:/";
-        if(keyword == null)
-            keyword = "";
-        stock_list = stockService.findContainingName(keyword);
+        // TO-DO -> the keyword search should be done in frontend
+        String paramValue = keyword.orElse("");
+        stock_list = stockService.findContainingName(paramValue);
 
 //        if(sessionID.getUser() == null)
 //        {
 //            setUser(auth);
 //        }
+        return stock_list;
+    }
 
-        theModel.addAttribute("userId", sessionID.getUser().getId());
-        theModel.addAttribute("stocks", stock_list);
-        theModel.addAttribute("keyword", keyword);
-        return "stocks/list-stocks";
+    @GetMapping("/stock/{id}")
+    public ResponseEntity<?> getStockData (@PathVariable("id") Integer id) throws Exception  //, Authentication auth)
+    {
+        // TO-DO : ERROR HANDLING --> DONE ???
+        try{
+            Stock stock = stockService.findById(id);
+            return ResponseEntity.ok(stock);
+        }
+        catch(Exception ex){
+            ApiException errorResponse = new ApiException(HttpStatus.NOT_FOUND, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+
+//        TO-DO : This local cached user-thing
+//        if(sessionID.getUser() == null)
+//        {
+//            setUser(auth);
+//        }
+//        return stock;
     }
 }
