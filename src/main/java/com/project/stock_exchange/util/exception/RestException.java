@@ -1,19 +1,17 @@
 package com.project.stock_exchange.util.exception;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class ApiException {
+public class RestException {
     private HttpStatus status;
     private String message;
 
-    public ApiException() {};
+    public RestException() {};
 
-    public ApiException(HttpStatus status, String message) {
+    public RestException(HttpStatus status, String message) {
         this.status = status;
         this.message = message;
     }

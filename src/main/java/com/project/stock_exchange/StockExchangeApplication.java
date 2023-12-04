@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
-@EnableAutoConfiguration(exclude={UserDetailsServiceAutoConfiguration.class})
+//@EnableAutoConfiguration(exclude={UserDetailsServiceAutoConfiguration.class})
 public class StockExchangeApplication implements WebMvcConfigurer
 {
 	public void addViewControllers(ViewControllerRegistry registry)

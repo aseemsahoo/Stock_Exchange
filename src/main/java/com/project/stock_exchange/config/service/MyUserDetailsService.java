@@ -1,16 +1,15 @@
-package com.project.stock_exchange.service.config;
+package com.project.stock_exchange.config.service;
 
-import com.project.stock_exchange.entity.DTO.UserSignupDTO;
-import com.project.stock_exchange.service.Interfaces.UserSignupService;
+import com.project.stock_exchange.entity.User;
+//import com.project.stock_exchange.entity.dto.UserSignupDTO;
+import com.project.stock_exchange.service.interfaces.UserSignupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -37,13 +36,13 @@ public class MyUserDetailsService implements UserDetailsService {
     private UserSignupService userSignupService;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserSignupDTO> userRes = Optional.ofNullable(userSignupService.findByUsername(username));
+        Optional<User> userRes = Optional.ofNullable(userSignupService.findByUsername(username));
         if(userRes.isEmpty())
-            throw new UsernameNotFoundException("Could not findUser with username = " + username);
-        UserSignupDTO user = userRes.get();
+            throw new UsernameNotFoundException("Could not find user with username: " + username);
+        User user = userRes.get();
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+ user.getRole())));
     }
 }

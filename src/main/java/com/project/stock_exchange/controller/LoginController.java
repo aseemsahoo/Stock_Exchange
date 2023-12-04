@@ -1,85 +1,88 @@
 package com.project.stock_exchange.controller;
 
-import com.project.stock_exchange.entity.DTO.UserSignupDTO;
-import com.project.stock_exchange.entity.singleton.SessionID;
+import com.project.stock_exchange.entity.SignupRequest;
 import com.project.stock_exchange.entity.User;
-import com.project.stock_exchange.service.Interfaces.UserService;
-import com.project.stock_exchange.service.Interfaces.UserSignupService;
-import com.project.stock_exchange.util.ApiException;
-import org.apache.coyote.Response;
+import com.project.stock_exchange.entity.auth.AuthRequest;
+//import com.project.stock_exchange.entity.dto.UserSignupDTO;
+import com.project.stock_exchange.service.interfaces.UserService;
+import com.project.stock_exchange.service.interfaces.UserSignupService;
+import com.project.stock_exchange.util.exception.RestException;
+import com.project.stock_exchange.util.jwt.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Map;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+//@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
+@RequestMapping("/auth")
 public class LoginController
 {
     @Autowired
     private final UserSignupService userSignupService;
+    @Autowired
+    private AuthenticationManager authManager;
+    @Autowired
+    private JWTService jwtService;
     private final UserService userService;
-    private SessionID sessionID;
-    public LoginController(UserSignupService userSignupService, UserService userService, SessionID sessionID) {
+    public LoginController(UserSignupService userSignupService, UserService userService, AuthenticationManager authManager, JWTService jwtService) {
         this.userSignupService = userSignupService;
         this.userService = userService;
-        this.sessionID = sessionID;
+        this.authManager = authManager;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/signupSubmit")
-    public ResponseEntity<?> signUp(@RequestBody Map<String, String> requestBody) throws Exception{
-        String firstName = requestBody.get("firstName");
-        String lastName = requestBody.get("lastName");
-        String username = requestBody.get("username");
-        String password = requestBody.get("password");
+    public ResponseEntity<?> signUp(@RequestBody SignupRequest signupRequestBody) throws Exception{
 
-        UserSignupDTO userSignupDTO = new UserSignupDTO();
+        User newUser = new User();
 
-        userSignupDTO.setFirstName(firstName);
-        userSignupDTO.setLastName(lastName);
-        userSignupDTO.setEmail("N/A");
-        userSignupDTO.setUsername(username);
-        userSignupDTO.setPassword("{noop}" + userSignupDTO.getPassword());
+        newUser.setFirstName(signupRequestBody.getFirstName());
+        newUser.setLastName(signupRequestBody.getLastName());
 
-        userSignupDTO.setEnabled(true);
-        userSignupDTO.setBalance(BigDecimal.valueOf(10000.000));
-        userSignupDTO.setInvested(BigDecimal.valueOf(0));
+        // fix
+//        newUser.setEmail("N/A");
+        newUser.setEmail(signupRequestBody.getFirstName()+signupRequestBody.getLastName()+"@gmail.com");
+        newUser.setUsername(signupRequestBody.getUsername());
+        newUser.setPassword("{noop}" + signupRequestBody.getPassword());
 
+        newUser.setRole("USER");
+        newUser.setBalance(BigDecimal.valueOf(10000.000));
+        newUser.setInvested(BigDecimal.valueOf(0));
         try{
-            userSignupService.saveUser(userSignupDTO);
+            userSignupService.saveUser(newUser);
         }
-        catch(Exception ex){
-
-            ApiException errorResponse = new ApiException(HttpStatus.FORBIDDEN, ex.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        catch(DataIntegrityViolationException ex){
+            throw ex;
         }
         return ResponseEntity.ok("Success!");
     }
 
     @PostMapping("/loginSubmit")
     // change return type to something solid
-    public ResponseEntity<?> login(@RequestBody Map<String, String> requestBody) throws Exception {
-        String username = requestBody.get("username");
-        String password = requestBody.get("password");
+    public ResponseEntity<?> login(@RequestBody AuthRequest requestBody) throws Exception {
+        String username = requestBody.getUsername();
+        String password = requestBody.getPassword();
 
-        password = "{noop}" + password;
-        try{
-            UserSignupDTO userSignupDTO = userSignupService.getUser(username, password);
-            if(userSignupDTO == null) {
-                throw new Exception("Invalid username or password");
-            }
-        }
-        catch (Exception ex){
-            ApiException errorResponse = new ApiException(HttpStatus.UNAUTHORIZED, ex.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-        }
-        User user = userService.getAccountDetails(username);
-        sessionID.setUser(user);
+        try {
+            UsernamePasswordAuthenticationToken authInputToken = new UsernamePasswordAuthenticationToken(username, password);
 
-        // singleton class set karo and others
-        return ResponseEntity.ok(user);
+            authManager.authenticate(authInputToken);
+
+            String token = jwtService.generateToken(username);
+            User user = userService.getAccountDetails(username);
+            return ResponseEntity.ok(Collections.singletonMap("jwt-token", token));
+        }
+        catch (AuthenticationException authExc) {
+            throw authExc;
+        }
     }
 }

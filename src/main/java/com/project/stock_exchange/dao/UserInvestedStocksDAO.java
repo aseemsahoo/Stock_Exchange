@@ -1,7 +1,7 @@
 package com.project.stock_exchange.dao;
 
-import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
-import com.project.stock_exchange.entity.DTO.UserInvestedStocksID;
+import com.project.stock_exchange.entity.dto.UserInvestedStocksDTO;
+import com.project.stock_exchange.entity.dto.UserInvestedStocksID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

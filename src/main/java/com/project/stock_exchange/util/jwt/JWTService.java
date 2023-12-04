@@ -9,17 +9,19 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-@Component
-public class JWTUtil {
+@Service
+public class JWTService {
 
     @Value("${jwt_secretKey}")
     private String secret;
     private static final Duration JWT_TOKEN_VALIDITY = Duration.ofMinutes(5);
+    public JWTService() {};
 
     public String generateToken(String username) throws IllegalArgumentException, JWTCreationException {
         final Instant now = Instant.now();
@@ -33,30 +35,36 @@ public class JWTUtil {
     }
 
     public String validateTokenAndRetrieveSubject(String token)throws JWTVerificationException {
-        try {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret))
-                    .withSubject("User Details")
-                    .withIssuer("Aseem Sahoo")
-                    .build();
-            DecodedJWT jwt = verifier.verify(token);
-
-            // Check if the token is not expired
-            if (jwt.getExpiresAt() != null && jwt.getExpiresAt().before(new Date())) {
-                throw new JWTVerificationException("Token has expired");
-            }
-
-            // Retrieve and return the username
-            return jwt.getClaim("username").asString();
-        }
-        catch(TokenExpiredException tokenExc)
-        {
-            throw new JWTVerificationException("The token has expired");
-        }
-        catch (JWTVerificationException jwtExc) {
-            // Token verification failed
-//            throw new TokenValidationException("Token verification failed");
-            throw new JWTVerificationException("Token verification failed");
-        }
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret))
+                .withSubject("User Details")
+                .withIssuer("Aseem Sahoo")
+                .build();
+        DecodedJWT jwt = verifier.verify(token);
+        return jwt.getClaim("username").asString();
+//        try {
+//            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret))
+//                    .withSubject("User Details")
+//                    .withIssuer("Aseem Sahoo")
+//                    .build();
+//            DecodedJWT jwt = verifier.verify(token);
+//
+//            // Check if the token is not expired
+//            if (jwt.getExpiresAt() != null && jwt.getExpiresAt().before(new Date())) {
+//                throw new JWTVerificationException("Token has expired");
+//            }
+//
+//            // Retrieve and return the username
+//            return jwt.getClaim("username").asString();
+//        }
+//        catch(TokenExpiredException tokenExc)
+//        {
+//            throw new JWTVerificationException("The token has expired");
+//        }
+//        catch (JWTVerificationException jwtExc) {
+//            // Token verification failed
+////            throw new TokenValidationException("Token verification failed");
+//            throw new JWTVerificationException("Token verification failed");
+//        }
     }
 
 }

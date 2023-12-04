@@ -1,152 +1,71 @@
 package com.project.stock_exchange.config;
 
+import com.project.stock_exchange.config.service.MyUserDetailsService;
+import com.project.stock_exchange.util.UnAuthorizedUserAuthenticationEntryPoint;
+import com.project.stock_exchange.util.jwt.JWTFilter;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-//
-////@SuppressWarnings("ALL")
-////@Configuration
-////@EnableWebSecurity
-////public class SecurityConfig
-////{
-////    @Bean
-////    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-////        http
-////                .csrf().disable()
-////                .authorizeRequests()
-////                .anyRequest().authenticated()
-////                .and()
-////                .httpBasic().disable()
-////                .formLogin().disable();
-////        return http.build();
-////    }
-//////    @Bean
-//////    public UserDetailsManager UserDetailsManager(DataSource dataSource) {
-//////        JdbcUserDetailsManager myUserDetailsManager = new JdbcUserDetailsManager(dataSource);
-//////
-//////        myUserDetailsManager
-//////                .setUsersByUsernameQuery("select username, password, enabled from users where username=?");
-//////        myUserDetailsManager
-//////                .setAuthoritiesByUsernameQuery("select username, role from roles where username=?");
-//////        return myUserDetailsManager;
-//////    }
-////}
-////
-//
-//@SuppressWarnings("ALL")
-//@Configuration
-//@EnableWebSecurity
-//public class SecurityConfig {
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-////        http
-////                .csrf().disable()
-////                .authorizeRequests()
-////                .anyRequest().authenticated()
-////                .and()
-////                .httpBasic().disable()
-////                .formLogin().disable()
-//////                .authorizeHttpRequests((authz) -> authz
-//////                        .anyRequest().authenticated()
-//////                )
-////                .httpBasic(withDefaults());
-//
-//        http
-//                .cors().and()
-//                .csrf().disable() // Disable CSRF for simplicity, enable it in production
-//                .authorizeRequests()
-//                .requestMatchers("/**").permitAll()
-//                .anyRequest().authenticated()
-//                .and()
-//                .httpBasic();
-//
-//        // Add the CORS filter before the Spring Security filter chain
-//        http.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
-//    }
-//
-//    @Bean
-//    public CorsFilter corsFilter() {
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.addAllowedOrigin("*"); // Allow all origins
-//        config.addAllowedMethod("*"); // Allow all HTTP methods
-//        config.addAllowedHeader("*"); // Allow all headers
-//        config.setAllowCredentials(true);
-//        source.registerCorsConfiguration("/**", config);
-//        return new CorsFilter(source);
-//    }
-//}
-////    @Bean
-////    CorsConfigurationSource corsConfigurationSource() {
-////        CorsConfiguration configuration = new CorsConfiguration();
-////        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-////        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
-////        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-////        source.registerCorsConfiguration("/**", configuration);
-////        return source;
-////    }
-//
-////
-////}
-//////@Configuration
-//////
-//////@EnableWebMvc
-//////public class SecurityConfig implements WebMvcConfigurer {
-//////    @Override
-//////    public void configure(HttpSecurity http) throws Exception {
-//////        http.csrf().disable().authorizeRequests()
-//////                .antMatchers("/").permitAll()
-//////                .antMatchers(HttpMethod.POST,"/newuser").permitAll()
-//////                .antMatchers(HttpMethod.POST, "/login").permitAll()
-//////                .antMatchers(HttpMethod.POST,"/newuser/*").permitAll()
-//////                .antMatchers(HttpMethod.GET,"/master/*").permitAll()
-//////                .antMatchers(HttpMethod.GET,"/exploreCourse").permitAll()
-//////                .anyRequest().authenticated()
-//////    }
-//////
-//////    @Override
-//////    public void addCorsMappings(CorsRegistry registry) {
-//////        registry.addMapping("/**");
-//////    }
-//////}
-
 
 @SuppressWarnings("ALL")
-@EnableWebSecurity
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
-
+    @Autowired
+    private MyUserDetailsService myUserDetailsService;
+    @Autowired
+    private JWTFilter filter;
+    @Autowired
+    private UnAuthorizedUserAuthenticationEntryPoint authenticationEntryPoint;
     private String allowedMethods = "*";
-
     private String allowedHeaders = "*";
-
     private String corsConfiguration = "/**";
-
     private String allowedOrigin = "*";
-
     private boolean allowedCredentials = false;
 
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http.csrf().disable()
+                .httpBasic().disable()
+                .cors()
+                .and()
                 .authorizeHttpRequests()
-                .requestMatchers(corsConfiguration)
-                .permitAll()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/dashboard/**", "/accounts/**", "/stocks/**").hasAnyRole("USER", "ADMIN")
+                .and()
+                .userDetailsService(myUserDetailsService)
+                .exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
+
+//                .authenticationEntryPoint(
+//                        (request, response, authException) ->
+//                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+//                )
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
+
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
@@ -158,5 +77,9 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(corsConfiguration, configuration);
         return source;
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

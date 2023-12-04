@@ -1,21 +1,25 @@
 package com.project.stock_exchange.controller;
 
 import com.project.stock_exchange.entity.*;
-import com.project.stock_exchange.entity.ApiAccess.StockPriceApiAccess;
-import com.project.stock_exchange.entity.DTO.UserInvestedStocksDTO;
-import com.project.stock_exchange.entity.singleton.SessionID;
-import com.project.stock_exchange.service.Interfaces.StockService;
-import com.project.stock_exchange.service.Interfaces.UserService;
+import com.project.stock_exchange.entity.apiAccess.StockPriceApiAccess;
+import com.project.stock_exchange.entity.dto.UserInvestedStocksDTO;
+import com.project.stock_exchange.service.UserInvestedStocksServiceImpl;
+import com.project.stock_exchange.service.interfaces.StockService;
+import com.project.stock_exchange.service.interfaces.UserInvestedStocksService;
+import com.project.stock_exchange.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+//@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/stocks")
 public class StocksController
@@ -23,16 +27,17 @@ public class StocksController
     @Value("${apiKey}")
     private String apiKey;
     private final StockService stockService;
+    // remove this, we fetch this from JWT Token
     private final UserService userService;
-    private SessionID sessionID;
+    private final UserInvestedStocksService userInvestedStocksService;
     private List<StockPriceApiAccess> chartArray;
 
     @Autowired
-    public StocksController(StockService stockService, UserService userService, SessionID sessionID, List<StockPriceApiAccess> chartArray) {
+    public StocksController(StockService stockService, UserService userService, List<StockPriceApiAccess> chartArray, UserInvestedStocksService userInvestedStocksService) {
         this.stockService = stockService;
         this.userService = userService;
-        this.sessionID = sessionID;
         this.chartArray = chartArray;
+        this.userInvestedStocksService = userInvestedStocksService;
     }
 
     @PostMapping("/buy")
@@ -43,27 +48,29 @@ public class StocksController
         Integer stockId = Integer.parseInt(requestBody.get("stockId"));
         String stockSymbol = requestBody.get("symbol");
 
-//        User user = sessionID.getUser();
-        User user = userService.getAccountDetails("aseemsahoo");
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        BigDecimal balance = user.getBalance();
-
-        String url = "https://financialmodelingprep.com/api/v3/quote-short/{symbol}?apikey={apiKey}";
-
-        Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("symbol", stockSymbol);
-        uriVariables.put("apiKey", apiKey);
+        User user = userService.getAccountDetails(username);
 
         // get the latest stock price
-        try{
-            RestTemplate restTemplate = new RestTemplate();
-            StockPriceApiAccess[] stockPriceData = restTemplate.getForObject(url, StockPriceApiAccess[].class, uriVariables);
+        try {
+            String url = "https://financialmodelingprep.com/api/v3/quote-short/{symbol}?apikey={apiKey}";
+
+            WebClient webClient = WebClient.create();
+            Mono<StockPriceApiAccess[]> stockPriceDataMono = webClient
+                    .get()
+                    .uri(url, stockSymbol, apiKey)
+                    .retrieve()
+                    .bodyToMono(StockPriceApiAccess[].class);
+
+            StockPriceApiAccess[] stockPriceData = stockPriceDataMono.block();
             chartArray = Arrays.asList(stockPriceData);
         }
-        catch(Exception ex){
+        catch(Exception ex) {
             throw ex;
         }
 
+        BigDecimal balance = user.getBalance();
         BigDecimal stockPrice = chartArray.get(0).getPrice();
         BigDecimal buyPrice = stockPrice.multiply(BigDecimal.valueOf(buy_quantity));
 
@@ -75,7 +82,7 @@ public class StocksController
         if(buy_quantity < 1){
             return null;
         }
-        UserInvestedStocksDTO currStockData = userService.getUserInvestedStock(user.getId(), stockId);
+        UserInvestedStocksDTO currStockData = userInvestedStocksService.getUserInvestedStock(user.getId(), stockId);
         if(currStockData == null){
             currStockData = new UserInvestedStocksDTO(user.getId(), stockId, 0, new BigDecimal(String.valueOf(0)));
         }
@@ -83,7 +90,7 @@ public class StocksController
 
         currStockData.setQuantity(curr_quantity.add(BigInteger.valueOf(buy_quantity)).intValue());
         currStockData.setTotalPrice(buyPrice.add(currStockData.getTotalPrice()));
-        userService.updateUserStockData(currStockData);
+        userInvestedStocksService.updateUserStockData(currStockData);
 
         user.setBalance(user.getBalance().subtract(buyPrice));
         user.setInvested(user.getInvested().add(buyPrice));
@@ -99,27 +106,28 @@ public class StocksController
         Integer stockId = Integer.parseInt(requestBody.get("stockId"));
         String stockSymbol = requestBody.get("symbol");
 
-        User user = userService.getAccountDetails("aseemsahoo");
-
-        BigDecimal balance = user.getBalance();
-
-        String url = "https://financialmodelingprep.com/api/v3/quote-short/{symbol}?apikey={apiKey}";
-
-        Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("symbol", stockSymbol);
-        uriVariables.put("apiKey", apiKey);
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.getAccountDetails(username);
 
         // get the latest stock price
         try{
-            RestTemplate restTemplate = new RestTemplate();
-            StockPriceApiAccess[] stockPriceData = restTemplate.getForObject(url, StockPriceApiAccess[].class, uriVariables);
+            String url = "https://financialmodelingprep.com/api/v3/quote-short/{symbol}?apikey={apiKey}";
+
+            WebClient webClient = WebClient.create();
+            Mono<StockPriceApiAccess[]> stockPriceDataMono = webClient
+                    .get()
+                    .uri(url, stockSymbol, apiKey)
+                    .retrieve()
+                    .bodyToMono(StockPriceApiAccess[].class);
+
+            StockPriceApiAccess[] stockPriceData = stockPriceDataMono.block();
             chartArray = Arrays.asList(stockPriceData);
         }
         catch(Exception ex){
             throw ex;
         }
 
-        UserInvestedStocksDTO currStockData = userService.getUserInvestedStock(user.getId(), stockId);
+        UserInvestedStocksDTO currStockData = userInvestedStocksService.getUserInvestedStock(user.getId(), stockId);
         if(currStockData == null){
             return null;
         }
@@ -131,18 +139,16 @@ public class StocksController
         }
 
         BigDecimal stockPrice = chartArray.get(0).getPrice();
-//        BigDecimal buyPrice = (currStockData.getTotalPrice().multiply(BigDecimal.valueOf(sell_quantity))).divide(BigDecimal.valueOf(curr_quantity));
         BigDecimal sellPrice = stockPrice.multiply(BigDecimal.valueOf(sell_quantity));
 
         currStockData.setQuantity(currStockData.getQuantity() - sell_quantity);
         currStockData.setTotalPrice(currStockData.getTotalPrice().subtract(sellPrice));
         if(currStockData.getQuantity() == 0){
-            userService.deleteUserStockData(currStockData);
+            userInvestedStocksService.deleteUserStockData(currStockData);
         }
         else{
-            userService.updateUserStockData(currStockData);
+            userInvestedStocksService.updateUserStockData(currStockData);
         }
-
         user.setBalance(user.getBalance().add(sellPrice));
         user.setInvested(user.getInvested().subtract(sellPrice));
         userService.updateUserBalance(user);

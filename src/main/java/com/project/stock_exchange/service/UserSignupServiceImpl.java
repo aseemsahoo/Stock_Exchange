@@ -1,9 +1,11 @@
 package com.project.stock_exchange.service;
 
 import com.project.stock_exchange.dao.UserSignupDAO;
-import com.project.stock_exchange.entity.DTO.UserSignupDTO;
-import com.project.stock_exchange.service.Interfaces.UserSignupService;
+import com.project.stock_exchange.entity.User;
+//import com.project.stock_exchange.entity.dto.UserSignupDTO;
+import com.project.stock_exchange.service.interfaces.UserSignupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,10 +21,23 @@ public class UserSignupServiceImpl implements UserSignupService
     }
 
     @Override
-    public void saveUser(UserSignupDTO userSignup) {
+    public void saveUser(User userSignup) {
         try
         {
             userSignupDAO.save(userSignup);
+        }
+        catch(DataIntegrityViolationException ex)
+        {
+            throw ex;
+        }
+    }
+
+    @Override
+    public User getUser(String username, String password)
+    {
+        try
+        {
+            return userSignupDAO.getUser(username, password);
         }
         catch(Exception ex)
         {
@@ -31,11 +46,12 @@ public class UserSignupServiceImpl implements UserSignupService
     }
 
     @Override
-    public UserSignupDTO getUser(String username, String password)
+    public User findByUsername(String username)
     {
         try
         {
-            return userSignupDAO.getUser(username, password);
+            User user =  userSignupDAO.findByUsername(username);
+            return user;
         }
         catch(Exception ex)
         {

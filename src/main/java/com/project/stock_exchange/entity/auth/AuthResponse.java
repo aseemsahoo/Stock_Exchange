@@ -1,2 +1,4 @@
-package com.project.stock_exchange.entity.auth;public class AuthResponse {
+package com.project.stock_exchange.entity.auth;
+
+public class AuthResponse {
 }

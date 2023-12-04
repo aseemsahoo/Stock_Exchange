@@ -1,9 +1,8 @@
-package com.project.stock_exchange.service.Interfaces;
+package com.project.stock_exchange.service.interfaces;
 
 import com.project.stock_exchange.entity.Stock;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface StockService
 {

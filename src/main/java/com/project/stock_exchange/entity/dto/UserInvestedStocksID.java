@@ -1,7 +1,4 @@
-package com.project.stock_exchange.entity.DTO;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
+package com.project.stock_exchange.entity.dto;
 
 import java.io.Serializable;
 

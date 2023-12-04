@@ -1,6 +1,5 @@
-package com.project.stock_exchange.entity.DTO;
+package com.project.stock_exchange.entity.dto;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 
 import java.math.BigDecimal;
