@@ -1,60 +1,50 @@
 package com.project.stock_exchange.controller;
 
-import com.project.stock_exchange.entity.singleton.SessionID;
 import com.project.stock_exchange.entity.Stock;
-import com.project.stock_exchange.service.Interfaces.StockService;
-import com.project.stock_exchange.service.Interfaces.UserService;
-import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.Authentication;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.project.stock_exchange.service.interfaces.StockService;
+import com.project.stock_exchange.service.interfaces.UserService;
+import com.project.stock_exchange.util.exception.RestException;
+//import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-
-import org.springframework.stereotype.Controller;
 
 import java.util.*;
 
-@Controller
+//@CrossOrigin(origins = "*", allowedHeaders = "*")
+@RestController
 @RequestMapping("/dashboard")
 public class HomeController
 {
     private List<Stock> stock_list;
     private final StockService stockService;
     private final UserService userService;
-    private SessionID sessionID;
 
-    public HomeController(StockService stockService, UserService userService, SessionID sessionID) {
+    public HomeController(StockService stockService, UserService userService) {
         this.stockService = stockService;
         this.userService = userService;
-        this.sessionID = sessionID;
     }
 
-//    private void setUser(Authentication auth)
-//    {
-//        String username = auth.getName();
-//        User user = userService.getAccountDetails(username);
-////        int userId = userService.getUserID(username);
-////        User user = userService.getAccountDetails(userId);
-//        sessionID.setUser(user);
-//    }
     @GetMapping("/list")
-    public String list_users(Model theModel, @Param("keyword")String keyword, Authentication auth)
+    public List<Stock> getStocksList(@RequestParam("keyword") Optional<String> keyword)
     {
-        if(sessionID.getUser() == null)
-            return "redirect:/";
-        if(keyword == null)
-            keyword = "";
-        stock_list = stockService.findContainingName(keyword);
+        // TO-DO -> the keyword search should be done in frontend
+        String paramValue = keyword.orElse("");
+        stock_list = stockService.findContainingName(paramValue);
 
-//        if(sessionID.getUser() == null)
-//        {
-//            setUser(auth);
-//        }
+        return stock_list;
+    }
 
-        theModel.addAttribute("userId", sessionID.getUser().getId());
-        theModel.addAttribute("stocks", stock_list);
-        theModel.addAttribute("keyword", keyword);
-        return "stocks/list-stocks";
+    @GetMapping("/stock/{id}")
+    public ResponseEntity<?> getStockData (@PathVariable("id") Integer id) throws Exception
+    {
+        try{
+            Stock stock = stockService.findById(id);
+            return ResponseEntity.ok(stock);
+        }
+        catch(NoSuchElementException ex){
+            throw ex;
+        }
     }
 }

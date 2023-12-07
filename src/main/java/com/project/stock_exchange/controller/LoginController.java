@@ -1,78 +1,88 @@
 package com.project.stock_exchange.controller;
 
-import com.project.stock_exchange.entity.DTO.UserSignupDTO;
-import com.project.stock_exchange.entity.singleton.SessionID;
+import com.project.stock_exchange.entity.SignupRequest;
 import com.project.stock_exchange.entity.User;
-import com.project.stock_exchange.service.Interfaces.UserService;
-import com.project.stock_exchange.service.Interfaces.UserSignupService;
+import com.project.stock_exchange.entity.auth.AuthRequest;
+//import com.project.stock_exchange.entity.dto.UserSignupDTO;
+import com.project.stock_exchange.service.interfaces.UserService;
+import com.project.stock_exchange.service.interfaces.UserSignupService;
+import com.project.stock_exchange.util.exception.RestException;
+import com.project.stock_exchange.util.jwt.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 
-@Controller
+//@CrossOrigin(origins = "*", allowedHeaders = "*")
+@RestController
+@RequestMapping("/auth")
 public class LoginController
 {
     @Autowired
     private final UserSignupService userSignupService;
+    @Autowired
+    private AuthenticationManager authManager;
+    @Autowired
+    private JWTService jwtService;
     private final UserService userService;
-    private SessionID sessionID;
-    public LoginController(UserSignupService userSignupService, UserService userService, SessionID sessionID) {
+    public LoginController(UserSignupService userSignupService, UserService userService, AuthenticationManager authManager, JWTService jwtService) {
         this.userSignupService = userSignupService;
         this.userService = userService;
-        this.sessionID = sessionID;
-    }
-
-    @GetMapping("/")
-    public String welcome(Model theModel)
-    {
-        return "index";
-    }
-    @GetMapping("/login_page")
-    public String showLoginPage(Model theModel)
-    {
-        return "login/login-page";
-    }
-    @GetMapping("/signup_page")
-    public String showSignupPage(Model theModel)
-    {
-        UserSignupDTO userSignupDTO = new UserSignupDTO();
-        theModel.addAttribute("user_signup", userSignupDTO);
-        return "login/signup-page";
+        this.authManager = authManager;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/signupSubmit")
-    public String signUp(@ModelAttribute("user_signup") UserSignupDTO userSignupDTO,
-                         Model theModel)
-    {
-        userSignupDTO.setEmail("N/A");
-        userSignupDTO.setPassword("{noop}" + userSignupDTO.getPassword());
-        userSignupDTO.setEnabled(true);
-        userSignupDTO.setBalance(BigDecimal.valueOf(10000.000));
-        userSignupDTO.setInvested(BigDecimal.valueOf(0));
+    public ResponseEntity<?> signUp(@RequestBody SignupRequest signupRequestBody) throws Exception{
 
-        userSignupService.saveUser(userSignupDTO);
-        return "login/login-page";
-    }
-    @PostMapping("/loginSubmit")
-    public String login(@RequestParam("username") String username,
-                        @RequestParam("password") String password)
-    {
-        password = "{noop}" + password;
-        UserSignupDTO userSignupDTO = userSignupService.getUser(username, password);
-        if(userSignupDTO == null)
-        {
-            return "login/login-page";
+        User newUser = new User();
+
+        newUser.setFirstName(signupRequestBody.getFirstName());
+        newUser.setLastName(signupRequestBody.getLastName());
+
+        // fix
+//        newUser.setEmail("N/A");
+        newUser.setEmail(signupRequestBody.getFirstName()+signupRequestBody.getLastName()+"@gmail.com");
+        newUser.setUsername(signupRequestBody.getUsername());
+        newUser.setPassword("{noop}" + signupRequestBody.getPassword());
+
+        newUser.setRole("USER");
+        newUser.setBalance(BigDecimal.valueOf(10000.000));
+        newUser.setInvested(BigDecimal.valueOf(0));
+        try{
+            userSignupService.saveUser(newUser);
         }
-        User user = userService.getAccountDetails(username);
-        sessionID.setUser(user);
-        // singleton class set karo and others
-        return "redirect:/dashboard/list";
+        catch(DataIntegrityViolationException ex){
+            throw ex;
+        }
+        return ResponseEntity.ok("Success!");
+    }
 
+    @PostMapping("/loginSubmit")
+    // change return type to something solid
+    public ResponseEntity<?> login(@RequestBody AuthRequest requestBody) throws Exception {
+        String username = requestBody.getUsername();
+        String password = requestBody.getPassword();
+
+        try {
+            UsernamePasswordAuthenticationToken authInputToken = new UsernamePasswordAuthenticationToken(username, password);
+
+            authManager.authenticate(authInputToken);
+
+            String token = jwtService.generateToken(username);
+            User user = userService.getAccountDetails(username);
+            return ResponseEntity.ok(Collections.singletonMap("jwt-token", token));
+        }
+        catch (AuthenticationException authExc) {
+            throw authExc;
+        }
     }
 }
